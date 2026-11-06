@@ -1,0 +1,39 @@
+{
+ "brand_en": "Coca-Cola",
+ "brand_cn": "可口可乐",
+ "flavor": "经典原味",
+ "category": "碳酸饮料",
+ "volume": "200ml",
+ "count": 24,
+ "unit": "罐",
+ "spec_text": "200ml × 24罐/箱",
+ "theme": [
+  226,
+  20,
+  40
+ ],
+ "can_image": "assets/can/can_cola.png",
+ "out_dir": "output/cola-200ml-24",
+ "scenes": {
+  "ice": "assets/scenes/ice.png",
+  "fridge": "assets/scenes/fridge.png",
+  "desk": "assets/scenes/desk.png",
+  "party": "assets/scenes/party.png",
+  "food": "assets/scenes/food.png"
+ },
+ "shipping": {
+  "forbidden": [
+   "新疆",
+   "西藏",
+   "青海",
+   "海南",
+   "北京",
+   "上海"
+  ]
+ },
+ "warehouse_note": "所有订单自天津仓统一发出",
+ "title": "可口可乐经典原味碳酸饮料汽水200ml×24罐整箱装小罐装易拉罐家庭聚会聚餐办公室囤货开罐即饮冰镇更佳外出携带整箱更划算",
+ "price": 33.55,
+ "price_single": 34.55,
+ "price_ref": 35.55
+}

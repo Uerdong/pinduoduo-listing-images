@@ -1,0 +1,121 @@
+{
+ "brand_en": "Mirinda",
+ "brand_cn": "美年达",
+ "flavor": "葡萄",
+ "category": "碳酸饮料",
+ "volume": "300ml",
+ "count": 17,
+ "unit": "瓶",
+ "spec_text": "300ml × 17瓶/箱",
+ "theme": [
+  124,
+  45,
+  140
+ ],
+ "can_image": "assets/can/can_mirinda_grape.png",
+ "out_dir": "output/mirinda-grape-300ml-17",
+ "scenes": {
+  "ice": "assets/scenes/ice.png",
+  "fridge": "assets/scenes/fridge.png",
+  "desk": "assets/scenes/desk.png",
+  "party": "assets/scenes/party.png",
+  "food": "assets/scenes/food.png"
+ },
+ "shipping": {
+  "forbidden": [
+   "新疆",
+   "西藏",
+   "海南",
+   "北京",
+   "上海"
+  ],
+  "surcharge": [
+   {
+    "provinces": [
+     "甘肃",
+     "宁夏",
+     "青海",
+     "内蒙古"
+    ],
+    "fee": 1.2
+   }
+  ]
+ },
+ "warehouse_note": "哈尔滨仓",
+ "title": "美年达葡萄300ml×17瓶整箱装家庭聚会聚餐办公室囤货开瓶即饮",
+ "price": 24.04,
+ "price_single": 25.04,
+ "price_ref": 26.04,
+ "cost": 22.9,
+ "stock": 50,
+ "stock_default": true,
+ "range_random": true,
+ "ref_image_note": "用户提供京东图 720×720（12瓶组合），已提取单瓶并抠透明",
+ "plan": [
+  {
+   "family": "白底棚拍",
+   "layout": "studio_white",
+   "qty": 1
+  },
+  {
+   "family": "冰爽矩阵",
+   "layout": "matrix",
+   "bg_mode": "ice"
+  },
+  {
+   "family": "极简留白",
+   "layout": "minimal_center"
+  },
+  {
+   "family": "户外冰镇",
+   "layout": "fullbleed_left",
+   "bg": "assets/scenes/ice.png",
+   "qty": 2,
+   "chips": [
+    "300ml 一人一瓶",
+    "17瓶整箱",
+    "冰镇后开瓶"
+   ]
+  },
+  {
+   "family": "冷柜冷光",
+   "layout": "fullbleed_top",
+   "bg": "assets/scenes/fridge.png"
+  },
+  {
+   "family": "生活方式",
+   "layout": "fullbleed_left",
+   "bg": "assets/scenes/desk.png",
+   "qty": 1,
+   "chips": [
+    "办公桌常备",
+    "300ml 小瓶",
+    "开瓶即饮"
+   ]
+  },
+  {
+   "family": "人群聚会",
+   "layout": "fullbleed_top",
+   "bg": "assets/scenes/party.png"
+  },
+  {
+   "family": "佐餐餐桌",
+   "layout": "fullbleed_left",
+   "bg": "assets/scenes/food.png",
+   "qty": 1,
+   "chips": [
+    "佐餐好搭档",
+    "家常菜烧烤",
+    "整箱囤货"
+   ]
+  },
+  {
+   "family": "信息图",
+   "layout": "spec_panel"
+  },
+  {
+   "family": "品牌撞色",
+   "layout": "split_color"
+  }
+ ]
+}
