@@ -1,0 +1,108 @@
+{
+ "brand_en": "Coca-Cola",
+ "brand_cn": "可口可乐",
+ "flavor": "经典原味",
+ "category": "碳酸饮料",
+ "volume": "200ml",
+ "count": 24,
+ "unit": "罐",
+ "spec_text": "200ml × 24罐/箱",
+ "theme": [
+  226,
+  20,
+  40
+ ],
+ "can_image": "D:\\pinduoduo\\media-output\\can_cola.png",
+ "out_dir": "D:\\pinduoduo\\验收\\出图验收v2\\可口可乐-200ML-24罐",
+ "scenes": {
+  "ice": "D:\\pinduoduo\\media-output\\img-mw3cc2tn-af6f553a.png",
+  "fridge": "D:\\pinduoduo\\media-output\\img-mw3cbmof-bd125338.png",
+  "desk": "D:\\pinduoduo\\media-output\\img-mw3cc8xw-e9e1a92f.png",
+  "party": "D:\\pinduoduo\\media-output\\img-mw4e66gx-33fd7911.png",
+  "food": "D:\\pinduoduo\\media-output\\img-mw4e5kth-1f8fb4cc.png"
+ },
+ "shipping": {
+  "forbidden": [
+   "新疆",
+   "西藏",
+   "青海",
+   "海南",
+   "北京",
+   "上海"
+  ]
+ },
+ "warehouse_note": "所有订单自天津仓统一发出",
+ "title": "可口可乐经典原味碳酸饮料200ml×24罐整箱装家庭聚会聚餐小罐装",
+ "price": 33.55,
+ "price_single": 34.55,
+ "price_ref": 35.55,
+ "cost": 31.95,
+ "ref_image_note": "用户提供，800×800，无需替换",
+ "plan": [
+  {
+   "family": "白底棚拍",
+   "layout": "studio_white",
+   "qty": 3
+  },
+  {
+   "family": "冰爽矩阵",
+   "layout": "matrix",
+   "bg_mode": "ice"
+  },
+  {
+   "family": "极简留白",
+   "layout": "minimal_center"
+  },
+  {
+   "family": "户外冰镇",
+   "layout": "fullbleed_left",
+   "bg": "D:\\pinduoduo\\media-output\\img-mw3cc2tn-af6f553a.png",
+   "qty": 3,
+   "chips": [
+    "200ml 一人一罐",
+    "24罐整箱",
+    "冰镇后开罐"
+   ]
+  },
+  {
+   "family": "冷柜冷光",
+   "layout": "fullbleed_top",
+   "bg": "D:\\pinduoduo\\media-output\\img-mw3cbmof-bd125338.png"
+  },
+  {
+   "family": "生活方式",
+   "layout": "fullbleed_left",
+   "bg": "D:\\pinduoduo\\media-output\\img-mw3cc8xw-e9e1a92f.png",
+   "qty": 2,
+   "chips": [
+    "办公桌常备",
+    "200ml 小罐",
+    "开罐即饮"
+   ]
+  },
+  {
+   "family": "人群聚会",
+   "layout": "fullbleed_top",
+   "bg": "D:\\pinduoduo\\media-output\\img-mw4e66gx-33fd7911.png"
+  },
+  {
+   "family": "佐餐餐桌",
+   "layout": "fullbleed_left",
+   "bg": "D:\\pinduoduo\\media-output\\img-mw4e5kth-1f8fb4cc.png",
+   "qty": 2,
+   "chips": [
+    "佐餐好搭档",
+    "家常菜烧烤",
+    "整箱囤货"
+   ]
+  },
+  {
+   "family": "信息图",
+   "layout": "spec_panel"
+  },
+  {
+   "family": "品牌撞色",
+   "layout": "split_color"
+  }
+ ]
+}

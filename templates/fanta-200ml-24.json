@@ -1,0 +1,48 @@
+{
+  "brand_en": "Fanta",
+  "brand_cn": "芬达",
+  "flavor": "经典橙味",
+  "category": "汽水",
+  "volume": "200ml",
+  "count": 24,
+  "unit": "罐",
+  "spec_text": "200ml × 24罐/箱",
+  "slogan": "经典橙味 畅爽带劲",
+  "taste_line1": "经典橙味果香浓郁，气泡充足",
+  "taste_line2": "冰镇后饮用，口感更畅快",
+  "points": [
+    ["经典橙味", "果香浓郁，气泡充足"],
+    ["畅爽带劲", "冰镇后开罐，口感更畅快"],
+    ["200ml 小罐", "一人一罐，不用担心喝不完"],
+    ["整箱 24 罐", "家庭常备，囤货更省心"]
+  ],
+  "theme": [
+    235,
+    110,
+    20
+  ],
+  "can_image": "D:\\pinduoduo\\media-output\\can_fanta.png",
+  "out_dir": "D:\\pinduoduo\\设计输出\\芬达-200ML-24罐",
+  "scenes": {
+    "ice": "D:\\pinduoduo\\media-output\\img-mw3cc2tn-af6f553a.png",
+    "fridge": "D:\\pinduoduo\\media-output\\img-mw3cbmof-bd125338.png",
+    "desk": "D:\\pinduoduo\\media-output\\img-mw3cc8xw-e9e1a92f.png",
+    "party": "D:\\pinduoduo\\media-output\\img-mw4e66gx-33fd7911.png",
+    "food": "D:\\pinduoduo\\media-output\\img-mw4e5kth-1f8fb4cc.png"
+  },
+  "shipping": {
+    "forbidden": [
+      "新疆",
+      "西藏",
+      "青海",
+      "海南",
+      "北京",
+      "上海"
+    ]
+  },
+  "warehouse_note": "所有订单自天津仓统一发出",
+  "title": "芬达橙味汽水200ml×24罐整箱装家庭聚会聚餐办公室囤货开罐即饮",
+  "price": 33.55,
+  "price_single": 34.55,
+  "price_ref": 35.55
+}
