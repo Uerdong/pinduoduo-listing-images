@@ -88,6 +88,7 @@ def build(brand, flavor, category, volume, count, unit,
     # 「开罐即饮」只适用于罐装，瓶装要改成「开瓶即饮」
     if unit and unit != "罐":
         pool = ["开%s即饮" % unit if w == "开罐即饮" else w for w in pool]
+        pool = [w for w in pool if w != "易拉罐"]   # 瓶装不能写易拉罐
     # 大规格不能写「小罐装」：500ml/888ml 这类会被判文案与规格不符
     digits = "".join(ch for ch in str(volume) if ch.isdigit() or ch == ".")
     ml = float(digits) if digits else 0.0
@@ -96,9 +97,17 @@ def build(brand, flavor, category, volume, count, unit,
     if tail:
         pool = [tail] + pool
     # 词池里都是偶数单位，若剩余为奇数则最多填到 target-1，属正常
+    picked = []
     for w in pool:
+        # 跳过与已选词重复的（如先选「囤货」又选「囤货装」）
+        if any(w[:2] == p[:2] or w in p or p in w for p in picked):
+            continue
         if units(out + w) <= target:
             out += w
+            picked.append(w)
+    # 兜底去重：把「囤货囤货装」这类相邻重复段收成一段
+    for n in (3, 2):
+        out = re.sub(r"(.{%d})\1" % n, r"\1", out)
     return out
 
 

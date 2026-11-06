@@ -259,7 +259,7 @@ def build_mixed(rows, markup):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("xlsx")
-    ap.add_argument("--out-dir", default="data")
+    ap.add_argument("--out-dir", default=r"D:\pinduoduo\data")
     ap.add_argument("--markup", type=float, default=1.05)
     ap.add_argument("--with-mixed", action="store_true")
     ap.add_argument("--sheet", default=None, help="工作表名，默认「一件代发价」")

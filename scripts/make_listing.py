@@ -8,35 +8,8 @@ import os
 import sys
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-# 中文字体：按平台候选路径查找，也可用环境变量显式指定
-FONT_CAND_BOLD = [
-    os.environ.get("PDD_FONT_BOLD", ""),
-    r"C:\Windows\Fonts\msyhbd.ttc",
-    "/System/Library/Fonts/PingFang.ttc",
-    "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
-    "/usr/share/fonts/truetype/noto/NotoSansCJK-Bold.ttc",
-]
-FONT_CAND_REG = [
-    os.environ.get("PDD_FONT_REGULAR", ""),
-    r"C:\Windows\Fonts\msyh.ttc",
-    "/System/Library/Fonts/PingFang.ttc",
-    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-    "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
-]
-
-
-def _pick(cands):
-    for c in cands:
-        if c and os.path.exists(c):
-            return c
-    return None
-
-
-FONT_B = _pick(FONT_CAND_BOLD)
-FONT_R = _pick(FONT_CAND_REG) or FONT_B
-if not FONT_B:
-    raise SystemExit("找不到可用的中文字体。请用环境变量 PDD_FONT_BOLD / PDD_FONT_REGULAR "
-                     "指定 .ttf/.ttc 路径，或在系统里安装思源黑体 / 微软雅黑 / 苹方。")
+FONT_B = r"C:\Windows\Fonts\msyhbd.ttc"
+FONT_R = r"C:\Windows\Fonts\msyh.ttc"
 WHITE = (255, 255, 255)
 INK = (38, 38, 38)
 GRAY = (108, 108, 108)
@@ -759,9 +732,28 @@ class Kit:
         d.text((110, 100), spec.get("head") or "整箱 %d%s · 原箱未拆" % (n, self.c["unit"]),
                font=F(104), fill=th)
         d.text((114, 240), spec.get("sub") or self.spec, font=F(48, False), fill=INK)
-        bx0, by0, bx1, by1 = self._stack(
-            c, n, 1650, per=max(3, min(7, int(math.ceil(n / 2.6)))),
-            overlap=0.62, max_h=520, scale_dec=0.99)
+        # 前后错位的整箱块：后排先画、位置略高，前排压在后排前面
+        rows = 2 if n <= 8 else 3
+        cols = max(1, int(math.ceil(n / rows)))
+        hh = int(min(560, (1600 - 430) / (1 + (rows - 1) * 0.20)))
+        im = self.can_w(hh)
+        gapx = max(2, int(im.width * 0.02))
+        step_y = int(im.height * 0.20)
+        base = 1620
+        xs, ys, left = [], [], n
+        for i in range(rows):          # i=0 后排
+            cnt = min(cols, left)
+            left -= cnt
+            total = im.width * cnt + gapx * (cnt - 1)
+            x0 = (S - total) // 2
+            y = base - (rows - 1 - i) * step_y
+            for k in range(cnt):
+                xx = x0 + k * (im.width + gapx)
+                self._shadow(c, xx, y, im.width)
+                c.paste(im, (xx, y - im.height), im)
+                xs += [xx, xx + im.width]
+                ys += [y - im.height, y]
+        bx0, by0, bx1, by1 = min(xs), min(ys), max(xs), max(ys)
         pad = 44
         x0, y0, x1, y1 = bx0 - pad, by0 - pad, bx1 + pad, by1 + 26
         film = Image.new("RGBA", c.size, (0, 0, 0, 0))

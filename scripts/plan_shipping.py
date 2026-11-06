@@ -94,7 +94,7 @@ def build(rows):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("products")
-    ap.add_argument("--out", default="data/shipping_templates.md")
+    ap.add_argument("--out", default=r"D:\pinduoduo\data\shipping_templates.md")
     ap.add_argument("--demote", default="", help="平台不可加价、降级为禁发的省份，逗号分隔")
     ap.add_argument("--drop-surcharge", default="", help="平台不可加价但保留渠道、降级为包邮的省份，逗号分隔")
     a = ap.parse_args()
