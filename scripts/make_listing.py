@@ -64,6 +64,9 @@ class Kit:
         os.makedirs(self.ddir, exist_ok=True)
         self.theme = tuple(cfg.get("theme", [226, 20, 40]))
         self.can = Image.open(cfg["can_image"]).convert("RGBA")
+        # 源图分辨率：主图母版 2048，产品高度通常 700~1200px，放大超过 1.5 倍必然发软
+        self.src_h = self.can.height
+        self.max_upscale = round(1200.0 / max(1, self.src_h), 2)
         self.spec = cfg.get("spec_text") or "%s × %d%s/箱" % (cfg["volume"], cfg["count"], cfg["unit"])
         self.brand_cn = cfg["brand_cn"]
         self.flavor = cfg["flavor"]
@@ -330,7 +333,11 @@ class Kit:
 
         c, d = base()
         head(d, "饮用场景", "什么时候开都合适")
-        paste_round(c, Image.open(self.c["scenes"]["food"]).convert("RGB"), (56, 224, 694, 636), 20)
+        # 场景里必须出现产品，纯空场景不算详情图
+        panel = Image.open(self.c["scenes"]["food"]).convert("RGB").resize((638, 412), Image.LANCZOS)
+        pim = self.can_w(300)
+        panel = self._panel_product(panel, pim, 638 - pim.width - 44, 412 - 34)
+        paste_round(c, panel, (56, 224, 694, 636), 20)
         rows = [("日常自饮", "%s 一次一%s，不用担心喝不完" % (self.c["volume"], self.c["unit"])),
                 ("佐餐搭配", "烧烤、家常菜、外卖都能搭"),
                 ("聚会分享", "整箱 %d %s，人多也够分" % (self.c["count"], self.c["unit"]))]
@@ -432,6 +439,9 @@ class Kit:
             todo.append("库存按默认 %s 预填，用户尚未确认（可调）" % (c.get("stock", 50)))
         if c.get("range_random"):
             todo.append("本批商品范围为随机取样，非用户书面圈定")
+        if getattr(self, "src_h", 9999) < 900:
+            todo.append("产品图源高仅 %dpx，主图放大约 %.1f 倍会发软；建议换长边 ≥1200px 原图，"
+                        "或用同款实拍重新取图" % (self.src_h, self.max_upscale))
         for x in c.get("unconfirmed", []) or []:
             todo.append(str(x))
 
@@ -603,7 +613,7 @@ class Kit:
             y = self._chip(d, x, y, t, th)
         n = max(1, min(int(spec.get("qty", 3)), 3))
         im = self.can_w(int(S * 0.42))
-        base = int(S * 0.80)
+        base = int(S * float(spec.get("anchor", 0.80)))
         gap = int(im.width * 0.16)
         xs = int(S * 0.92) - im.width * n - gap * (n - 1)
         for i in range(n):
@@ -617,8 +627,10 @@ class Kit:
         d.text((110, 110), spec.get("head") or ("%s %s" % (self.brand_cn, self.flavor)),
                font=F(126), fill=th)
         d.text((114, 262), spec.get("sub") or self.spec, font=F(54, False), fill=INK)
-        im = self.can_w(int(S * 0.56))
-        c.paste(im, ((S - im.width) // 2, int(S * 0.86) - im.height), im)
+        base = int(S * float(spec.get("anchor", 0.86)))
+        im = self.can_w(int(S * float(spec.get("scale", 0.56))))
+        self._shadow(c, (S - im.width) // 2, base, im.width)
+        c.paste(im, ((S - im.width) // 2, base - im.height), im)
         return c
 
     def lay_minimal_center(self, spec, S=2048):
@@ -662,6 +674,18 @@ class Kit:
                 idx += 1
         self._strip(c, d, self.spec, "%d%s/箱 整箱发货" % (n, self.c["unit"]), th, band=260)
         return c
+
+    def _panel_product(self, panel, pim, x, yb):
+        """把小尺寸场景面板里合成产品，带接触阴影。"""
+        lay = Image.new("RGBA", panel.size, (0, 0, 0, 0))
+        h = max(14, int(pim.width * 0.07))
+        ImageDraw.Draw(lay).ellipse([x + int(pim.width * 0.10), yb - h // 2,
+                                     x + int(pim.width * 0.90), yb + h // 2], fill=(0, 0, 0, 90))
+        lay = lay.filter(ImageFilter.GaussianBlur(10))
+        out = panel.convert("RGBA")
+        out.alpha_composite(lay)
+        out.alpha_composite(pim, (x, yb - pim.height))
+        return out.convert("RGB")
 
     def _grid_boxes(self, n, cols, rows, x0, y0, aw, ah, gapx=4, gapy=4):
         """按 cols×rows 算每个单体的 (left, bottom, width)，超出 n 的不返回。"""
