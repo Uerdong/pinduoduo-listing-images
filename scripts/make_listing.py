@@ -439,6 +439,9 @@ class Kit:
             todo.append("库存按默认 %s 预填，用户尚未确认（可调）" % (c.get("stock", 50)))
         if c.get("range_random"):
             todo.append("本批商品范围为随机取样，非用户书面圈定")
+        if getattr(self, "prog_fallback", False):
+            n_fb = sum(1 for _, _, ok, _ in getattr(self, "bg_log", []) if not ok)
+            todo.append("%d 张主图缺模型底图，已降级为程序底（画面同质化风险），见「底图来源」" % n_fb)
         if getattr(self, "src_h", 9999) < 900:
             todo.append("产品图源高仅 %dpx，主图放大约 %.1f 倍会发软；建议换长边 ≥1200px 原图，"
                         "或用同款实拍重新取图" % (self.src_h, self.max_upscale))
@@ -502,6 +505,12 @@ class Kit:
         L.append("- 详情长图：750×6000，**仅本地预览，不上传**")
         L.append("- 参考图：%s" % c.get("ref_image_note", "—"))
         L.append("")
+        L.append("## 底图来源（model_first 台账）")
+        for i, spec, ok, src in getattr(self, "bg_log", []):
+            L.append("- MD-%02d ｜ %s ｜ %s" % (
+                i, spec.get("family") or spec.get("layout") or "—",
+                ("模型底图：%s" % os.path.basename(str(src))) if ok else "程序底（降级）"))
+        L.append("")
         L.append("## 待确认项")
         if todo:
             for t in todo:
@@ -515,9 +524,10 @@ class Kit:
     # ================= 版式族引擎（plan 模式） =================
     # 版式族 = 背景世界观 + 光位色温 + 色彩关系 + 构图留白 + 道具材质。
     # 同一套 10 张主图至少覆盖 4 族、同族不超过 3 张，见 SKILL 第四节。
-    LAYOUTS = ("studio_white", "fullbleed_left", "fullbleed_top", "minimal_center",
-               "matrix", "split_color", "spec_panel", "brand_card",
-               "matrix_pyramid", "matrix_film", "matrix_row", "matrix_hero")
+    LAYOUTS = ("studio_white", "fullbleed_left", "fullbleed_right", "fullbleed_top",
+               "minimal_center", "split_color", "spec_panel", "brand_card",
+               "matrix", "matrix_pyramid", "matrix_film", "matrix_row", "matrix_hero",
+               "editorial_bottom")
 
     def _th(self, spec):
         return tuple(spec.get("theme") or self.theme)
@@ -542,7 +552,15 @@ class Kit:
             return c
         if mode == "ice":
             import random
-            random.seed(spec.get("seed", 7))
+            # seed 必须按「SKU + 槽位」派生：固定 seed=7 会让所有商品拿到像素级相同的冰底
+            seed = spec.get("seed")
+            if seed is None:
+                import hashlib
+                key = "|".join([str(self.c.get("sku_id") or ""),
+                                str(self.c.get("out_dir") or ""),
+                                str(spec.get("family") or spec.get("layout") or "")])
+                seed = int(hashlib.md5(key.encode("utf-8")).hexdigest()[:6], 16)
+            random.seed(seed)
             c = Image.new("RGB", (S, S), (222, 238, 250))
             d = ImageDraw.Draw(c)
             for _ in range(80):
@@ -576,7 +594,32 @@ class Kit:
         return y + h + 18
 
     def _strip(self, c, d, main, sub, th, band=300):
+        """规格色条。strip_mode 三态，避免每款每张都是「底部色条」同一副骨架。
+
+        band（默认，底部圆角条）/ top（顶部通栏条）/ none（无块面，左下裸文字＋细线）
+        """
+        spec = getattr(self, "cur", None) or {}
+        mode = str(spec.get("strip_mode") or "band").lower()
         W, H = c.size
+        if mode == "none":
+            f = F(int(spec.get("strip_size") or 68))
+            y = H - 190
+            d.line([(130, y - 54), (130 + int(d.textlength(main, font=f)), y - 54)],
+                   fill=th, width=6)
+            d.text((130, y), main, font=f, fill=th)
+            if sub:
+                d.text((134, y + int(f.size * 1.35)), sub, font=F(38, False), fill=GRAY)
+            return
+        if mode == "card":
+            f1, f2 = F(64), F(38, False)
+            w = int(max(d.textlength(main, font=f1), d.textlength(sub or "", font=f2))) + 130
+            h = 178
+            x0, y0 = 70, H - 70 - h
+            d.rounded_rectangle([x0, y0, x0 + w, y0 + h], radius=36, fill=th)
+            d.text((x0 + 60, y0 + 30), main, font=f1, fill=WHITE)
+            if sub:
+                d.text((x0 + 64, y0 + 116), sub, font=f2, fill=(255, 255, 255))
+            return
         top = H - 70 - band
         d.rounded_rectangle([70, top, W - 70, H - 70], radius=48, fill=th)
         d.text((130, top + 34), main, font=F(76), fill=WHITE)
@@ -618,6 +661,68 @@ class Kit:
         xs = int(S * 0.92) - im.width * n - gap * (n - 1)
         for i in range(n):
             c.paste(im, (xs + i * (im.width + gap), base - im.height), im)
+        return c
+
+    def lay_fullbleed_right(self, spec, S=2048):
+        """满幅 + 右文左品。与 fullbleed_left 镜像，用于打破「标题永远在左上」的骨架。"""
+        th = self._th(spec)
+        c = self._bg(spec)
+        d = ImageDraw.Draw(c)
+        head = spec.get("head") or "%s 畅爽开%s" % (self.flavor, self.c["unit"])
+        f_head = F(126)
+        x = S - int(S * 0.07) - int(d.textlength(head, font=f_head))
+        d.text((max(80, x), int(S * 0.11)), head, font=f_head, fill=th)
+        sub = spec.get("sub") or self.spec
+        d.text((max(84, x + 6), int(S * 0.11) + 164), sub, font=F(54, False), fill=INK)
+        y = int(S * 0.11) + 290
+        for t in (spec.get("chips") or [])[:3]:
+            f = F(42)
+            w = int(d.textlength(t, font=f)) + 110
+            x0 = S - int(S * 0.07) - w
+            d.rounded_rectangle([x0, y, x0 + w, y + 88], radius=44, fill=(255, 255, 255))
+            dot(d, x0 + 34, y + 44, 11, th)
+            d.text((x0 + 62, y + 20), t, font=f, fill=INK)
+            y += 106
+        n = max(1, min(int(spec.get("qty", 3)), 3))
+        im = self.can_w(int(S * 0.40))
+        base = int(S * float(spec.get("anchor", 0.82)))
+        gap = int(im.width * 0.16)
+        xs = int(S * 0.06)
+        for i in range(n):
+            c.paste(im, (xs + i * (im.width + gap), base - im.height), im)
+        return c
+
+    def lay_editorial_bottom(self, spec, S=2048):
+        """杂志式：产品压顶部／右下，标题压底部大字，无块面色条。给模型底图留足画面。"""
+        th = self._th(spec)
+        c = self._bg(spec)
+        d = ImageDraw.Draw(c)
+        head = spec.get("head") or self.c.get("slogan") or ("%s %s" % (self.brand_cn, self.flavor))
+        n = max(1, min(int(spec.get("qty", 1)), 3))
+        im = self.can_w(int(S * float(spec.get("scale", 0.62))))
+        base = int(S * float(spec.get("anchor", 0.86)))
+        gap = int(im.width * 0.10)
+        total = im.width * n + gap * (n - 1)
+        xs = int((S - total) * float(spec.get("align", 0.58)))
+        for i in range(n):
+            c.paste(im, (xs + i * (im.width + gap), base - im.height), im)
+        f1 = F(118)
+        lines, cur = [], ""
+        for ch in head:
+            if d.textlength(cur + ch, font=f1) > S - 260:
+                lines.append(cur)
+                cur = ch
+            else:
+                cur += ch
+        if cur:
+            lines.append(cur)
+        y = S - 150 - len(lines) * 150
+        sub = spec.get("sub")
+        if sub:
+            d.text((134, y - 86), sub, font=F(44, False), fill=GRAY)
+        for ln in lines:
+            d.text((130, y), ln, font=f1, fill=th)
+            y += 148
         return c
 
     def lay_fullbleed_top(self, spec, S=2048):
@@ -910,7 +1015,26 @@ class Kit:
 
     def run_plan(self, plan):
         cnt, probs = self.check_plan(plan)
+        # 底图策略：model_first = 每张图的画面必须来自模型生成的底图，缺图不许静默降级
+        self.bg_log = []
+        missing = []
         for i, spec in enumerate(plan, 1):
+            src = spec.get("bg")
+            ok = bool(src) and os.path.exists(str(src))
+            self.bg_log.append((i, spec, ok, src))
+            if not ok:
+                missing.append("MD-%02d(%s)" % (i, spec.get("family") or spec.get("layout") or "?"))
+        policy = str(self.c.get("bg_policy") or "model_first").lower()
+        self.prog_fallback = bool(missing) and policy == "model_first"
+        if policy == "model_first" and missing:
+            msg = "model_first 策略下缺模型底图：%s" % "、".join(missing)
+            if self.c.get("require_bg"):
+                raise SystemExit(
+                    msg + "\n先用 scripts/plan_bg.py 出提示词，调图像模型生成底图写回 plan[].bg 后重跑；"
+                          "确实要做纯色兜底请把 bg_policy 改成 \"procedural\"。")
+            probs.append(msg + "（已降级为程序底，须在待确认项留痕）")
+        for i, spec in enumerate(plan, 1):
+            self.cur = spec
             lay = spec.get("layout") or "studio_white"
             if lay not in self.LAYOUTS:
                 raise SystemExit("未知版式 %s，可选：%s" % (lay, " / ".join(self.LAYOUTS)))

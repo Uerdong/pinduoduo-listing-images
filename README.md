@@ -137,8 +137,14 @@ python scripts/pick_scenes.py --n 3 --seed 20261106 --avoid ice_bucket,fridge_sh
 # 5. 标题
 python scripts/title_builder.py --brand 芬达 --flavor 经典橙味 --volume 200ml --count 24
 
-# 6. 出图
-python scripts/make_listing.py templates/plan-10style-example.json
+# 6. 逐张写 16 条提示词（10 主图 + 6 详情图，由语言模型撰写，落 提示词/prompts.json）
+#    下面这条仅是模型不可用时的兜底模板
+python scripts/plan_bg.py data/cfg-<sku>.json --json data/bg-<sku>.json
+
+# 7. 模型出图后回写底图，再合成文案层
+python scripts/plan_bg.py data/cfg-<sku>.json --record 4=D:\...\MD-04-bg.png
+python scripts/make_listing.py data/cfg-<sku>.json
+python scripts/plan_bg.py data/cfg-<sku>.json --check     # 就绪自检
 ```
 
 产出：`output/<配置名>/主图/`、`详情图/`、`商品资料.md`
@@ -150,6 +156,8 @@ python scripts/make_listing.py templates/plan-10style-example.json
 必填：`brand_en` / `brand_cn` / `flavor` / `volume` / `count` / `unit` / `can_image` / `out_dir` / `scenes`
 
 常用可选：`theme`、`spec_text`、`shipping`（禁发/加价）、`title`、`price`、`price_single`、`price_ref`、`cost`、`stock`、`warehouse_note`、`ref_image_note`
+
+出图相关：`sku_id`（冰底 seed 按它派生）、`bg_policy`（`model_first` 默认 / `procedural`）、`require_bg`（`true` 时缺模型底图直接报错）；`plan[].bg`（模型底图路径，优先）、`plan[].strip_mode`（`band` / `card` / `none`）、`plan[].anchor` / `scale` / `bg_hint`
 
 ### plan 模式：逐张指定版式
 
