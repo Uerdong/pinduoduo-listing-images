@@ -62,7 +62,18 @@ BRAND_TOKENS.sort(key=len, reverse=True)
 # 前缀归一：货盘表写「怡泉」，平台品牌是「怡泉+C」
 BRAND_ALIAS = {"怡泉": "怡泉+C"}
 
-# 包装形态覆盖：拿到实拍后以实物为准，与容量推断冲突时以此表为准
+# 容量 → 单位（硬映射，覆盖原先「≤330 记罐」的粗推断）
+CAP_UNIT = {
+    "200ML": "罐",
+    "330ML": "罐",
+    "300ML": "瓶",   # 百事 / 美年达 / 无糖可乐 300ml 均为 PET 瓶
+    "450ML": "瓶",
+    "500ML": "瓶",
+    "888ML": "瓶",
+    "1.25L": "瓶",
+}
+
+# 包装形态覆盖：拿到实拍后以实物为准，与容量映射冲突时以此表为准
 PACKAGE_OVERRIDE = {
     "美年达-300ML": "瓶",   # 实拍为 PET 瓶，非易拉罐
 }
@@ -196,11 +207,12 @@ def parse(path, markup=1.05, with_mixed=False, sheet=None, header_row=None):
         n = int(bottles)
         cost = round(float(cost), 2)
         price = round(cost * markup, 2)
-        # 单位按容量推断：≤330ML 多为易拉罐，≥400ML 多为 PET 瓶（888ML 这类一定是瓶）
-        digits = "".join(ch for ch in str(cap) if ch.isdigit())
-        ml = float(digits) if digits else 0
-        if str(cap).upper().endswith("ML"):
-            unit = "罐" if ml <= 330 else "瓶"
+        # 单位按容量硬映射（300ML 是 PET 瓶，330ML 才是易拉罐）
+        key = str(cap).upper().replace(" ", "")
+        if key in CAP_UNIT:
+            unit = CAP_UNIT[key]
+        elif key.endswith("ML") or key.endswith("L"):
+            unit = "瓶"
         else:
             unit = UNIT_BY_CAP.get(str(cap), "箱")
         for fl in flavors:
